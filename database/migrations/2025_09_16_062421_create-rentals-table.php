@@ -11,7 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        //
+        Schema::create('rentals', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('book_id')->constrained()->onDelete('cascade');
+            $table->timestamp('rented_at')->useCurrent();
+            $table->timestamp('due_at');
+            $table->timestamp('returned_at')->nullable();
+            $table->bigInteger('fine_amount')->default(0);
+            $table->timestamps();
+        });
+
     }
 
     /**
