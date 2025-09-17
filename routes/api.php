@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\BookController;
+use App\Http\Controllers\Admin\RentalController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -17,3 +18,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::apiResource('books', BookController::class);
 
+Route::prefix('admin')->group(function () {
+    Route::apiResource('rentals', RentalController::class)->only([
+        'index', 'store', 'show'
+    ]);
+    Route::post('rentals/{rental}/return', [RentalController::class, 'returnBook'])
+        ->name('rentals.return');
+});
