@@ -14,7 +14,7 @@ class RentalController extends Controller
     private function isAvailable(Book $book)
     {
         if($book->stock <= 0){
-            return response()->json(['message' => 'this book is not available']);
+            abort(400, 'This book is not available');
         }
         return true;
     }
@@ -43,17 +43,39 @@ class RentalController extends Controller
     public function index()
     {
         $rentals = Rental::with(['book', 'user'])->paginate(10);
-        return new RentalResource($rentals);
+        return RentalResource::collection($rentals);
     }
 
+//    public function store(RentalRequest $request)
+//    {
+//        $book = Book::findorfail($request->book_id);
+//        $this->isAvailable($book);
+//        $rental = $this->create($book);
+//        $book->decrement('stock');
+//        return new RentalResource($rental);
+//    }
     public function store(RentalRequest $request)
     {
-        $book = Book::findorfail($request->book_id);
+        $book = Book::findOrFail($request->book_id);
+
+        // بررسی موجودی
         $this->isAvailable($book);
-        $rental = $this->create($book);
+
+        // کاهش موجودی قبل از اجاره
         $book->decrement('stock');
-        return new RentalResource($rental);
+
+        // ایجاد اجاره
+        $rental = Rental::create([
+            'user_id'    => auth()->id() ?? 1,
+            'book_id'    => $book->id,
+            'rented_at'  => now(),
+            'due_at'     => now()->addDays(7),
+            'fine_amount'=> 0,
+        ]);
+
+        return new RentalResource($rental->load(['book', 'user']));
     }
+
 
     public function returnBook($id)
     {

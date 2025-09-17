@@ -3,8 +3,9 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
-class BookRequest extends FormRequest
+class UpdateBookRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,10 +23,10 @@ class BookRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title'        => 'required|string|max:255',
-            'author'       => 'required|string|max:255',
-            'isbn'         => 'required|string|unique:books,isbn,' . $this->book?->id,
-            'stock'        => 'required|integer|min:0',
+            'title'        => 'sometimes|string|max:255',
+            'author'       => 'sometimes|string|max:255',
+            'isbn'         => 'sometimes|string|unique:books,isbn,' . $this->book->id,
+            'stock'        => 'sometimes|integer|min:0',
             'published_at' => 'nullable|date',
         ];
     }
