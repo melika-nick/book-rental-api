@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class BookRequest extends FormRequest
+class StoreBookRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,7 +24,7 @@ class BookRequest extends FormRequest
         return [
             'title'        => 'required|string|max:255',
             'author'       => 'required|string|max:255',
-            'isbn'         => 'required|string|unique:books,isbn,' . $this->book?->id,
+            'isbn'         => 'required|string|unique:books,isbn,',
             'stock'        => 'required|integer|min:0',
             'published_at' => 'nullable|date',
         ];
