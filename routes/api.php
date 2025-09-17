@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\BookController;
 use App\Http\Controllers\Admin\RentalController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -11,32 +12,39 @@ use Illuminate\Support\Facades\Route;
 | API Routes
 |--------------------------------------------------------------------------
 |
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| is assigned the "api" middleware group. Enjoy building your API!
-|
 */
 
-Route::apiResource('books', BookController::class);
-
-//Route::prefix('admin')->group(function () {
-//    Route::apiResource('rentals', RentalController::class)->only([
-//        'index', 'store', 'show'
-//    ]);
-//    Route::post('rentals/{rental}/return', [RentalController::class, 'returnBook'])
-//        ->name('rentals.return');
-//});
-
+// مسیرهای عمومی برای ثبت‌نام و ورود
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-// محافظت با Sanctum
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/logout', [AuthController::class, 'logout']);
+// Logout برای تمام کاربران
+Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
 
-    // مثال: متدهای رنتال فقط بعد از لاگین قابل دسترسی هستند
+// --------------------
+// مسیرهای ادمین
+// --------------------
+Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {
+    // مدیریت کتاب‌ها
+    Route::apiResource('books', BookController::class);
+
+    // مدیریت رنتال‌ها
     Route::apiResource('rentals', RentalController::class)->only([
         'index', 'store', 'show'
     ]);
-    Route::post('/rentals/{id}/return', [RentalController::class, 'returnBook']);
+
+    // مدیریت کاربران
+    Route::apiResource('users', UserController::class);
+});
+
+// --------------------
+// مسیرهای ممبر
+// --------------------
+Route::middleware(['auth:sanctum', 'role:member'])->prefix('member')->group(function () {
+    // مشاهده کتاب‌ها
+    Route::get('books', [BookController::class, 'index']);
+
+    //ایجاد و بازگرداندن رنتال
+    Route::post('rentals', [RentalController::class, 'store']);
+    Route::post('rentals/{id}/return', [RentalController::class, 'returnBook']);
 });
