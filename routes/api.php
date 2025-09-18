@@ -1,10 +1,9 @@
 <?php
 
 use App\Http\Controllers\Admin\BookController;
-use App\Http\Controllers\Admin\RentalController;
+use App\Http\Controllers\RentalController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuthController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
