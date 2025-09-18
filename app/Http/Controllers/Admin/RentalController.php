@@ -34,7 +34,7 @@ class RentalController extends Controller
     private function fine(Rental $rental): int
     {
         if ($rental->returned_at && $rental->returned_at->gt($rental->due_at)) {
-            $daysLate = $rental->returned_at->diffInDays($rental->due_at);
+            $daysLate = $rental->due_at->diffInDays($rental->returned_at);
             return $daysLate * env('DAILY_FINE', 20000);
         }
 
