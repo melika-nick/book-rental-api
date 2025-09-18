@@ -1,0 +1,328 @@
+openapi: 3.0.3
+info:
+  title: Book Rental API
+  version: 1.0.0
+  description: API برای مدیریت کتاب‌ها و رنتال‌ها
+
+servers:
+  - url: http://localhost:8000/api
+    description: Local server
+
+paths:
+  /register:
+    post:
+      summary: ثبت نام کاربر
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password, role]
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+                role:
+                  type: string
+                  enum: [admin, member]
+      responses:
+        '201':
+          description: ثبت نام موفق
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: object
+                    properties:
+                      id: { type: integer }
+                      name: { type: string }
+                      email: { type: string }
+                      role: { type: string }
+                  token: { type: string }
+        '422':
+          description: خطای اعتبارسنجی
+
+  /login:
+    post:
+      summary: ورود کاربر
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string }
+                password: { type: string }
+      responses:
+        '200':
+          description: ورود موفق
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: اعتبارسنجی ناموفق
+
+  /logout:
+    post:
+      summary: خروج کاربر
+      tags: [Auth]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: خروج موفق
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+
+  /admin/books:
+    get:
+      summary: لیست کتاب‌ها (Admin)
+      tags: [Books]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: search
+          schema: { type: string }
+          description: فیلتر بر اساس نام، نویسنده یا ISBN
+      responses:
+        '200':
+          description: موفق
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Book'
+        '404':
+          description: هیچ کتابی یافت نشد
+    post:
+      summary: ایجاد کتاب (Admin)
+      tags: [Books]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookCreateRequest'
+      responses:
+        '201':
+          description: کتاب ایجاد شد
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+
+  /admin/books/{id}:
+    get:
+      summary: مشاهده کتاب خاص
+      tags: [Books]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: موفق
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '404':
+          description: کتاب یافت نشد
+    put:
+      summary: بروزرسانی کتاب
+      tags: [Books]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookCreateRequest'
+      responses:
+        '200':
+          description: بروزرسانی موفق
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '404':
+          description: کتاب یافت نشد
+    delete:
+      summary: حذف کتاب
+      tags: [Books]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: حذف موفق
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+        '404':
+          description: کتاب یافت نشد
+
+  /member/books:
+    get:
+      summary: مشاهده کتاب‌ها (Member)
+      tags: [Books]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: search
+          schema: { type: string }
+          description: فیلتر جستجو
+      responses:
+        '200':
+          description: موفق
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Book'
+
+  /member/rentals:
+    post:
+      summary: اجاره کتاب
+      tags: [Rentals]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [book_id]
+              properties:
+                book_id: { type: integer }
+      responses:
+        '201':
+          description: رنتال ایجاد شد
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rental'
+        '400':
+          description: کتاب موجود نیست
+
+  /member/rentals/{id}/return:
+    post:
+      summary: بازگرداندن کتاب و محاسبه جریمه
+      tags: [Rentals]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: بازگرداندن موفق
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  fine: { type: integer }
+        '400':
+          description: کتاب قبلا بازگردانده شده
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Book:
+      type: object
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        author: { type: string }
+        isbn: { type: string }
+        stock: { type: integer }
+        published_at: { type: string, format: date }
+    BookCreateRequest:
+      type: object
+      required: [title, author, isbn, stock, published_at]
+      properties:
+        title: { type: string }
+        author: { type: string }
+        isbn: { type: string }
+        stock: { type: integer }
+        published_at: { type: string, format: date }
+    Rental:
+      type: object
+      properties:
+        id: { type: integer }
+        user_id: { type: integer }
+        book_id: { type: integer }
+        rented_at: { type: string, format: date-time }
+        due_at: { type: string, format: date-time }
+        returned_at: { type: string, format: date-time, nullable: true }
+        fine_amount: { type: integer }
+        book: { $ref: '#/components/schemas/Book' }
+        user:
+          type: object
+          properties:
+            id: { type: integer }
+            name: { type: string }
+            email: { type: string }
+            role: { type: string }
+    AuthResponse:
+      type: object
+      properties:
+        user:
+          type: object
+          properties:
+            id: { type: integer }
+            name: { type: string }
+            email: { type: string }
+            role: { type: string }
+        token: { type: string }
