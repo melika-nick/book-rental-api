@@ -1,13 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Http\Requests\RentalRequest;
 use App\Http\Resources\RentalResource;
 use App\Models\Book;
 use App\Models\Rental;
-use Carbon\Carbon;
 
 class RentalController extends Controller
 {
@@ -17,18 +15,6 @@ class RentalController extends Controller
             abort(400, 'This book is not available');
         }
         return true;
-    }
-
-    private function create(Book $book)
-    {
-        $rental = Rental::create([
-            'user_id'    => auth()->id(),
-            'book_id'    => $book->id,
-            'rented_at'  => Carbon::now(),
-            'due_at'     => Carbon::now()->addDays(7),
-            'fine_amount'=> 0,
-        ]);
-        return new RentalResource($rental);
     }
 
     private function fine(Rental $rental): int
@@ -45,15 +31,6 @@ class RentalController extends Controller
         $rentals = Rental::with(['book', 'user'])->paginate(10);
         return RentalResource::collection($rentals);
     }
-
-//    public function store(RentalRequest $request)
-//    {
-//        $book = Book::findorfail($request->book_id);
-//        $this->isAvailable($book);
-//        $rental = $this->create($book);
-//        $book->decrement('stock');
-//        return new RentalResource($rental);
-//    }
     public function store(RentalRequest $request)
     {
         $book = Book::findOrFail($request->book_id);
