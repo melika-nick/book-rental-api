@@ -16,9 +16,18 @@ class CheckRole
     public function handle(Request $request, Closure $next, $role): Response
     {
         $user = $request->user();
-        if (!$user || $user->role !== $role) {
+
+        // لاگین نشده
+        if (!$user) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
+
+        // نقش اشتباه
+        if ($user->role !== $role) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
         return $next($request);
     }
+
 }
