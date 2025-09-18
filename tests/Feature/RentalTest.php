@@ -24,7 +24,7 @@ class RentalTest extends TestCase
         [$member, $token] = $this->memberToken();
         $book = Book::factory()->create(['stock'=>3]);
 
-        $response = $this->postJson("/api/member/rentals", [
+        $response = $this->postJson("/api/rentals", [
             'book_id' => $book->id
         ], ['Authorization'=>"Bearer $token"]);
 
@@ -43,7 +43,7 @@ class RentalTest extends TestCase
             'due_at' => now()->subDays(7),
         ]);
 
-        $response = $this->postJson("/api/member/rentals/{$rental->id}/return", [], ['Authorization'=>"Bearer $token"]);
+        $response = $this->postJson("/api/rentals/{$rental->id}/return", [], ['Authorization'=>"Bearer $token"]);
         $response->assertStatus(200);
 
         $rental->refresh();

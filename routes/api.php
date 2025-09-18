@@ -40,7 +40,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
 // --------------------
 // مسیرهای ممبر
 // --------------------
-Route::middleware(['auth:sanctum', 'role:member'])->prefix('member')->group(function () {
+Route::middleware(['auth:sanctum', 'role:member'])->group(function () {
     // مشاهده کتاب‌ها
     Route::get('books', [BookController::class, 'index']);
 

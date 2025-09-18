@@ -1,0 +1,168 @@
+openapi: 3.0.3
+info:
+  title: Book Rental API
+  version: 1.0.0
+  description: >
+    مستندات مربوط به سرویس Book Rental API که از Postman Collection استخراج شده.
+servers:
+  - url: "{{baseURL}}"
+paths:
+  /api/books:
+    get:
+      summary: لیست کتاب‌ها
+      tags: [Books]
+      responses:
+        "200":
+          description: موفقیت
+    post:
+      summary: افزودن کتاب
+      tags: [Books]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: { type: string }
+                author: { type: string }
+                isbn: { type: string }
+                stock: { type: integer }
+                published_at: { type: string, format: date }
+      responses:
+        "201":
+          description: کتاب ایجاد شد
+  /api/books/{id}:
+    get:
+      summary: نمایش یک کتاب
+      tags: [Books]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: موفقیت
+    put:
+      summary: بروزرسانی کتاب
+      tags: [Books]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: { type: string }
+                author: { type: string }
+                isbn: { type: string }
+                stock: { type: integer }
+                published_at: { type: string, format: date }
+      responses:
+        "200":
+          description: کتاب بروزرسانی شد
+    delete:
+      summary: حذف کتاب
+      tags: [Books]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204":
+          description: حذف شد
+  /api/admin/rentals:
+    get:
+      summary: لیست اجاره‌ها (ادمین)
+      tags: [Rentals]
+      responses:
+        "200":
+          description: موفقیت
+    post:
+      summary: ایجاد اجاره
+      tags: [Rentals]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                book_id: { type: integer }
+      responses:
+        "201":
+          description: اجاره ثبت شد
+  /api/admin/rentals/{id}:
+    get:
+      summary: نمایش اجاره
+      tags: [Rentals]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: موفقیت
+  /api/admin/rentals/{id}/return:
+    get:
+      summary: بازگرداندن کتاب
+      tags: [Rentals]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: کتاب بازگردانده شد
+  /api/register:
+    post:
+      summary: ثبت‌نام کاربر
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                email: { type: string, format: email }
+                password: { type: string }
+                password_confirmation: { type: string }
+                role: { type: string }
+      responses:
+        "201":
+          description: کاربر ثبت شد
+  /api/login:
+    post:
+      summary: ورود
+      tags: [Auth]
+      responses:
+        "200":
+          description: ورود موفق
+  /api/logout:
+    post:
+      summary: خروج
+      tags: [Auth]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: خروج موفق
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
